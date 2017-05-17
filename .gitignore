@@ -1,0 +1,3 @@
+# Packer working directories
+packer_cache/
+*.build/

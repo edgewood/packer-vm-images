@@ -1,0 +1,31 @@
+#!/bin/sh
+
+# Script to easily build packer images under ansible without having to write a
+# lot of tricky playbook code to create and remove a temp directory and move
+# the images around.
+
+set -e
+
+images_dir="$1"
+image="$2"
+format="$3"
+
+# Packer wants the image output directory in the template to *not* exist, but
+# the temp directory *should* be created by mktemp for security.  Solve the
+# conflict by creating a unique temp directory, then pointing packer to a fixed
+# subdirectory of the tempdir.
+
+# create under images dir, since presumably it has lots of space
+tempdir="$(mktemp --directory --tmpdir="$images_dir" ansible_image_build_XXXXXXXX)"
+build_dir="${tempdir}/build"
+
+# remove tempdir on normal or error exit
+trap 'rm -rf "${tempdir}"' EXIT
+
+# speed up "typing" to boot CD prompt
+export PACKER_KEY_INTERVAL=10ms
+
+packer build -var output_dir="${build_dir}" -var format="$format" "$image".json
+
+# move the image to the images_dir where ansible expects it
+mv "${build_dir}/${image}.${format}" "${images_dir}/"

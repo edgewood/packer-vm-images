@@ -1,0 +1,86 @@
+#!/bin/sh
+
+set -e
+
+if [ $1 ]; then
+  hostname=$1
+fi
+
+set -x
+
+#######################################################################
+# upgrade Debian images as the LXC template does not do it.
+#######################################################################
+# don't start services during image setup (remove this at script end)
+printf '#!/bin/sh\nexit 101\n' > /usr/sbin/policy-rc.d
+chmod +x /usr/sbin/policy-rc.d
+# disable downloading translation package indexes
+echo 'Acquire::Languages "none";' > /etc/apt/apt.conf.d/99translations
+# disable apt cache
+aptGetClean='"find /var/cache/apt/archives /var/cache/apt/archives/partial -type f -name *.deb -delete; find /var/cache/apt -type f -name *.bin -delete || true"'
+cat << EOF > /etc/apt/apt.conf.d/99no-cache
+DPkg::Post-Invoke { ${aptGetClean} };
+APT::Update::Post-Invoke { ${aptGetClean} };
+
+Dir::Cache::pkgcache "";
+Dir::Cache::srcpkgcache "";
+EOF
+export DEBIAN_FRONTEND=noninteractive
+apt-get -y update
+apt-get -qy dist-upgrade
+
+#######################################################################
+# setup ansible user
+#######################################################################
+id ansible >/dev/null 2>&1 || useradd --uid 1100 --shell /bin/bash --create-home ansible
+mkdir -p /home/ansible/.ssh
+chmod 700 /home/ansible/.ssh
+cat > /home/ansible/.ssh/authorized_keys << EOF
+ecdsa-sha2-nistp384 AAAAE2VjZHNhLXNoYTItbmlzdHAzODQAAAAIbmlzdHAzODQAAABhBGfDTle/TTym8qI77P0LNaQWwQGhDEwJWnuLPqNcYgF5hlyEU+bF6q3ZKBQsUrB2yJsBi8Jwv+LE/UWvHPzDb8TeM+eXICVChgobIGdzaTuZyxovdbkPzWWqMnUVkyn7dw== home
+ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDZlsgU7owHx6KO6ADdZ45Z9pAMUBy8VxyaEalwlMHchuhrKJYgh/Qf5zvrZ7Blh3En2t7E5OQEbqT39af3P05r9ot3wTReXUTznkkfzzrOVZMtJpEIxMevYOUmMGeoN4SfQLxHvIRERUA5BmL0PcIosBIdi3AwVYAt29ijsQB2xZ1FDY/OIgQ3DiMPFxJMpU+jDQEo78P/jssvXbK9calJzi5C6E+ibLAVG2iDVYN5e9gDhwFlMjzX7qI5OaNc8BeMnUtHQFmhNKkrAe3uOqfqfepKEUWtNJqvpGL+uW8GmjU1mCbkuJQfk7o2matHZxNzpS3F934gK8X7nVHcT5sv work
+EOF
+chmod 600 /home/ansible/.ssh/authorized_keys
+chown -R ansible:ansible /home/ansible/.ssh
+passwd --delete ansible
+passwd --lock ansible
+
+#######################################################################
+# setup passwordless sudo for ansible user
+#######################################################################
+apt-get install -qy sudo
+cat > /etc/sudoers.d/ansible <<EOF
+ansible ALL=(ALL) NOPASSWD:ALL
+EOF
+chmod 0440 /etc/sudoers.d/ansible
+
+#######################################################################
+# setup hostname
+#######################################################################
+if [ -n "$hostname" ]; then
+  echo "${hostname%%.*}" > /etc/hostname
+else
+  echo localhost > /etc/hostname  # use DHCP hostname
+fi
+
+#######################################################################
+# speed up tweaks
+#######################################################################
+
+# Prevent DNS resolution (speed up logins)
+echo 'UseDNS no' >> /etc/ssh/sshd_config
+# Disable password logins
+echo 'PasswordAuthentication no' >> /etc/ssh/sshd_config
+
+# Reduce grub timeout to 1s to speed up booting
+[ -f /etc/default/grub ] && \
+  mountpoint -q /dev/ && \
+  sed -i s/GRUB_TIMEOUT=5/GRUB_TIMEOUT=1/ /etc/default/grub
+
+[ -x /usr/sbin/update-grub ] && \
+  mountpoint -q /dev/ && \
+  /usr/sbin/update-grub
+
+#######################################################################
+# cleanup
+#######################################################################
+rm -f /usr/sbin/policy-rc.d

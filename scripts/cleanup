@@ -1,0 +1,43 @@
+#!/bin/bash -eux
+
+# Adapted from https://github.com/boxcutter/debian/blob/master/script/cleanup.sh
+
+# Regenerate SSH keys on first boot
+rm -f /etc/ssh/*_key*
+
+# Regenerate machine ID on first boot
+rm -f /etc/machine-id
+rm -f /var/lib/dbus/machine-id
+
+# Clean up udev rules
+rm -rf /dev/.udev/
+rm /lib/udev/rules.d/75-persistent-net-generator.rules
+
+# Removing leftover leases
+if [ -d "/var/lib/dhcp" ]; then
+    rm /var/lib/dhcp/*
+fi
+
+# Clean up tmp
+rm -rf /tmp/*
+
+# Cleanup apt cache
+export DEBIAN_FRONTEND=noninteractive
+apt-get --yes autoremove
+apt-get --yes clean
+apt-get --yes autoclean
+
+# Remove Bash history
+unset HISTFILE
+rm -f /root/.bash_history
+rm -f /home/ansible/.bash_history
+
+# Clean up log files
+find /var/log -type f -delete
+
+# Clearing last login information
+>/var/log/lastlog
+>/var/log/wtmp
+>/var/log/btmp
+
+# Skipping the whiteout part from box-cutter -- which would just fill up the qcow2 image

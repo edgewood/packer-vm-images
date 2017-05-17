@@ -1,0 +1,36 @@
+#!/bin/sh
+
+set -e
+
+# Create custom_firstboot script
+cat << EOF > /usr/local/bin/custom_firstboot
+#!/bin/sh
+
+set -x
+set +e
+
+# Regenerate SSH host keys on first boot
+rm -f -v /etc/ssh/ssh_host_*_key*
+ssh-keygen -A
+systemctl restart ssh
+systemctl status ssh
+
+# Move ansible user off UID 1000
+if [ "x\$(id -u ansible 2>/dev/null)" = "x1000" ]; then
+    usermod --uid 1100 ansible
+fi
+
+# Remove cron.d entry and this script
+rm -f /etc/cron.d/custom_firstboot
+rm -f /usr/local/bin/custom_firstboot
+EOF
+chmod 700 /usr/local/bin/custom_firstboot
+
+# Set up firstboot script to run on reboot
+cat << EOF > /etc/cron.d/custom_firstboot
+SHELL=/bin/sh
+PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+
+@reboot root /usr/local/bin/custom_firstboot >> /root/crontab_reboot.log 2>&1
+EOF
+chmod 644 /etc/cron.d/custom_firstboot
