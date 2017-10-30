@@ -15,9 +15,12 @@ ssh-keygen -A
 systemctl restart ssh
 systemctl status ssh
 
-# Move ansible user off UID 1000
+# Move ansible user off UID and GID 1000
 if [ "x\$(id -u ansible 2>/dev/null)" = "x1000" ]; then
     usermod --uid 1100 ansible
+fi
+if [ "x\$(id -g ansible 2>/dev/null)" = "x1000" ]; then
+    groupmod --gid 1100 ansible
 fi
 
 # Remove cron.d entry and this script
