@@ -11,11 +11,11 @@ rm -f /var/lib/dbus/machine-id
 
 # Clean up udev rules
 rm -rf /dev/.udev/
-rm /lib/udev/rules.d/75-persistent-net-generator.rules
+rm -f /lib/udev/rules.d/75-persistent-net-generator.rules
 
 # Removing leftover leases
 if [ -d "/var/lib/dhcp" ]; then
-    rm /var/lib/dhcp/*
+    rm -rf /var/lib/dhcp/*
 fi
 
 # Clean up tmp
