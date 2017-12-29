@@ -38,7 +38,7 @@
       "ssh_wait_timeout": "10000s",
       "type": "qemu",
       "qemuargs": [[ "-m", "1024M" ],[ "-smp", "2" ]],
-      "vm_name": "debian-stretch-template.{{ user `format` }}",
+      "vm_name": "debian-stretch-template-{{user `box_version`}}.{{user `format`}}",
       "output_directory": "{{user `output_dir`}}",
       "format": "{{ user `format` }}"
     }
