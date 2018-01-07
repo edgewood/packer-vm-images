@@ -9,6 +9,8 @@ set -e
 images_dir="$1"
 image="$2"
 format="$3"
+version="$3"
+checksum="$4"
 
 # Packer wants the image output directory in the template to *not* exist, but
 # the temp directory *should* be created by mktemp for security.  Solve the
@@ -25,7 +27,10 @@ trap 'rm -rf "${tempdir}"' EXIT
 # speed up "typing" to boot CD prompt
 export PACKER_KEY_INTERVAL=10ms
 
-packer build -var output_dir="${build_dir}" -var format="$format" "$image".json
+args=-var output_dir="${build_dir}" -var format="$format" -var version="$version" -var checksum="$checksum"
+
+packer validate "$image".json $args
+packer build "$image".json $args
 
 # move the image to the images_dir where ansible expects it
-mv "${build_dir}/${image}.${format}" "${images_dir}/"
+mv "${build_dir}/${image}-${version}.${format}" "${images_dir}/"
