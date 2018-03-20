@@ -1,8 +1,8 @@
 {
   "description": "Vanilla Debian Stretch base box",
   "variables": {
-    "version": "9.3.0",
-    "checksum": "83480be837710a76fd4e75a6573ca110e06f5a7589d2d3852bdb0f45749800b3",
+    "version": "9.4.0",
+    "checksum": "124d270006703f2111224dec3bf7a9d01450168be41d4834f88fdd035552b044",
     "output_dir": "stretch.build",
     "format": null
     },
