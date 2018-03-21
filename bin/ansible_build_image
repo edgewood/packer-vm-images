@@ -19,18 +19,28 @@ checksum="$5"
 
 # create under images dir, since presumably it has lots of space
 tempdir="$(mktemp --directory --tmpdir="$images_dir" ansible_image_build_XXXXXXXX)"
+var_file="$(mktemp var_file_XXXXXXXX.json)"
 build_dir="${tempdir}/build"
 
 # remove tempdir on normal or error exit
-trap 'rm -rf "${tempdir}"' EXIT
+trap 'rm -rf "${tempdir}" "${var_file}"' EXIT
 
 # speed up "typing" to boot CD prompt
 export PACKER_KEY_INTERVAL=10ms
 
-args=-var output_dir="${build_dir}" -var format="$format" -var version="$version" -var checksum="$checksum"
+# remove empty variables from JSON, ensuring last one is one that can't be empty
+cat << EOF | grep -v '": "",' > "${var_file}"
+{
+  "version": "$version",
+  "checksum": "$checksum",
+  "format": "$format",
+  "output_dir": "$build_dir"
+}
+EOF
 
-packer validate "$image".json $args
-packer build "$image".json $args
+packer validate -var-file "${var_file}" "$image".json
+packer build -var-file "${var_file}" "$image".json
 
 # move the image to the images_dir where ansible expects it
+chown libvirt-qemu:libvirt-qemu "${build_dir}/${image}-${version}.${format}"
 mv "${build_dir}/${image}-${version}.${format}" "${images_dir}/"
