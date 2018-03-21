@@ -9,8 +9,8 @@ set -e
 images_dir="$1"
 image="$2"
 format="$3"
-version="$3"
-checksum="$4"
+version="$4"
+checksum="$5"
 
 # Packer wants the image output directory in the template to *not* exist, but
 # the temp directory *should* be created by mktemp for security.  Solve the
