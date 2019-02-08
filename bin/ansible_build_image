@@ -12,6 +12,7 @@ format="$3"
 version="$4"
 checksum="$5"
 checksumtype="$6"
+disk_size="$7"
 
 # Packer wants the image output directory in the template to *not* exist, but
 # the temp directory *should* be created by mktemp for security.  Solve the
@@ -38,6 +39,7 @@ cat << EOF | grep -v '": "",' > "${var_file}"
   "version": "$version",
   "checksum": "$checksum",
   "checksumtype": "$checksumtype",
+  "disk_size": "$disk_size",
   "format": "$format",
   "output_dir": "$build_dir"
 }
@@ -47,5 +49,5 @@ packer validate -var-file "${var_file}" "$image".json
 packer build -var-file "${var_file}" "$image".json
 
 # move the image to the images_dir where ansible expects it
-chown libvirt-qemu:libvirt-qemu "${build_dir}/${image}-${version}.${format}"
-mv "${build_dir}/${image}-${version}.${format}" "${images_dir}/"
+chown libvirt-qemu:libvirt-qemu "${build_dir}/${image}-${version}-"*".${format}"
+mv "${build_dir}/${image}-${version}-"*".${format}" "${images_dir}/"

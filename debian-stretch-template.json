@@ -5,7 +5,8 @@
     "checksumtype": null,
     "format": null,
     "output_dir": null,
-    "version": null
+    "version": null,
+    "disk_size": "5120"
     },
   "builders": [
     {
@@ -25,7 +26,7 @@
         "net.ifnames=0 <wait>",
         "<enter><wait>"
       ],
-      "disk_size": "5120",
+      "disk_size": "{{user `disk_size`}}",
       "disk_interface": "virtio",
       "headless": true,
       "http_directory": "http",
@@ -39,7 +40,7 @@
       "ssh_wait_timeout": "10000s",
       "type": "qemu",
       "qemuargs": [[ "-m", "1024M" ],[ "-smp", "2" ]],
-      "vm_name": "debian-stretch-template-{{user `version`}}.{{user `format`}}",
+      "vm_name": "debian-stretch-template-{{user `version`}}-{{user `disk_size`}}.{{user `format`}}",
       "output_directory": "{{user `output_dir`}}",
       "format": "{{ user `format` }}"
     }
