@@ -26,6 +26,9 @@ build_dir="${tempdir}/build"
 # remove tempdir on normal or error exit
 trap 'rm -rf "${tempdir}" "${var_file}"' EXIT
 
+# cache downloaded ISOs in images dir
+export PACKER_CACHE_DIR="${images_dir}/packer_cache"
+
 # speed up "typing" to boot CD prompt
 export PACKER_KEY_INTERVAL=10ms
 
