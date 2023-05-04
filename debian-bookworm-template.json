@@ -1,0 +1,60 @@
+{
+  "description": "Vanilla Debian Bookworm base box",
+  "variables": {
+    "checksum": null,
+    "checksumtype": null,
+    "format": null,
+    "output_dir": null,
+    "version": null,
+    "disk_size": "5120"
+    },
+  "builders": [
+    {
+      "boot_command": [
+        "<esc><wait>",
+        "install <wait>",
+        "preseed/url=http://{{ .HTTPIP }}:{{ .HTTPPort }}/bookworm-preseed.cfg <wait>",
+        "auto <wait>",
+        "locale=en_US <wait>",
+        "netcfg/get_hostname={{ .Name }} <wait>",
+        "netcfg/get_domain=localdomain <wait>",
+        "debconf/frontend=noninteractive <wait>",
+        "console-setup/ask_detect=false <wait>",
+        "kbd-chooser/method=us <wait>",
+        "console-keymaps-at/keymap=us <wait>",
+        "keyboard-configuration/xkb-keymap=us <wait>",
+        "net.ifnames=0 <wait>",
+        "<enter><wait>"
+      ],
+      "disk_size": "{{user `disk_size`}}",
+      "disk_interface": "virtio",
+      "headless": true,
+      "http_directory": "http",
+      "iso_checksum": "{{user `checksum`}}",
+      "iso_checksum_type": "{{user `checksumtype`}}",
+      "iso_url": "https://cdimage.debian.org/cdimage/weekly-builds/amd64/iso-cd/debian-testing-amd64-netinst.iso",
+      "shutdown_command": "sudo /sbin/halt -p",
+      "ssh_password": "ansible",
+      "ssh_username": "ansible",
+      "ssh_port": "22",
+      "ssh_wait_timeout": "10000s",
+      "type": "qemu",
+      "qemuargs": [[ "-m", "1024M" ],[ "-smp", "2" ]],
+      "vm_name": "debian-bookworm-template-{{user `version`}}-{{user `disk_size`}}.{{user `format`}}",
+      "output_directory": "{{user `output_dir`}}",
+      "format": "{{ user `format` }}"
+    }
+  ],
+  "provisioners": [
+    {
+      "type": "shell",
+      "pause_before": "5s",
+      "execute_command": "echo 'ansible'| {{.Vars}} sudo --preserve-env --stdin sh '{{.Path}}'",
+      "scripts": [
+        "scripts/ansible-setup",
+        "scripts/cleanup",
+        "scripts/custom-firstboot"
+      ]
+    }
+  ]
+}
