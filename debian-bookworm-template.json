@@ -32,7 +32,7 @@
       "http_directory": "http",
       "iso_checksum": "{{user `checksum`}}",
       "iso_checksum_type": "{{user `checksumtype`}}",
-      "iso_url": "https://cdimage.debian.org/cdimage/weekly-builds/amd64/iso-cd/debian-testing-amd64-netinst.iso",
+      "iso_url": "https://cdimage.debian.org/cdimage/release/{{user `version`}}/amd64/iso-cd/debian-{{user `version`}}-amd64-netinst.iso",
       "shutdown_command": "sudo /sbin/halt -p",
       "ssh_password": "ansible",
       "ssh_username": "ansible",
