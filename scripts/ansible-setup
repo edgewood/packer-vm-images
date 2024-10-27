@@ -36,8 +36,8 @@ id ansible >/dev/null 2>&1 || useradd --uid 1100 --shell /bin/bash --create-home
 mkdir -p /home/ansible/.ssh
 chmod 700 /home/ansible/.ssh
 cat > /home/ansible/.ssh/authorized_keys << EOF
-ecdsa-sha2-nistp384 AAAAE2VjZHNhLXNoYTItbmlzdHAzODQAAAAIbmlzdHAzODQAAABhBGfDTle/TTym8qI77P0LNaQWwQGhDEwJWnuLPqNcYgF5hlyEU+bF6q3ZKBQsUrB2yJsBi8Jwv+LE/UWvHPzDb8TeM+eXICVChgobIGdzaTuZyxovdbkPzWWqMnUVkyn7dw== home
-ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDZlsgU7owHx6KO6ADdZ45Z9pAMUBy8VxyaEalwlMHchuhrKJYgh/Qf5zvrZ7Blh3En2t7E5OQEbqT39af3P05r9ot3wTReXUTznkkfzzrOVZMtJpEIxMevYOUmMGeoN4SfQLxHvIRERUA5BmL0PcIosBIdi3AwVYAt29ijsQB2xZ1FDY/OIgQ3DiMPFxJMpU+jDQEo78P/jssvXbK9calJzi5C6E+ibLAVG2iDVYN5e9gDhwFlMjzX7qI5OaNc8BeMnUtHQFmhNKkrAe3uOqfqfepKEUWtNJqvpGL+uW8GmjU1mCbkuJQfk7o2matHZxNzpS3F934gK8X7nVHcT5sv work
+ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKaSbR9SfbWbZPEOW/Kf7wmdAWQstCOGVra1jVmgto2x home
+ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILM96cd4XC5NwFRQOjjRaKub9sIRq5l7DcaJdEsc7k3A work
 EOF
 chmod 600 /home/ansible/.ssh/authorized_keys
 chown -R ansible:ansible /home/ansible/.ssh
